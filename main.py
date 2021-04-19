@@ -8,7 +8,7 @@ import os
 
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-PORT = os.getenv('PORT')
+PORT = int(os.getenv('PORT'))
 
 class Server(BaseHTTPRequestHandler):
   def _set_headers(self):
