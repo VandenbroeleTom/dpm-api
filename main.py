@@ -24,6 +24,7 @@ class Server(BaseHTTPRequestHandler):
 
   def do_POST(self):
     content_type, _ = cgi.parse_header(self.headers.get('Content-Type'))
+    print(content_type)
 
     # refuse to receive non-json content
     if content_type != 'application/json':
@@ -37,8 +38,11 @@ class Server(BaseHTTPRequestHandler):
 
     response = {}
 
-    if (self.path == "/api/oauth/token"):
+    if (self.path == "/api/access-token"):
       response = self.oauthToken(message["code"])
+
+    if (self.path == "/api/refresh-token"):
+      response = self.refreshToken(message["refresh_token"])
 
     self._set_headers()
     self.wfile.write(json.dumps(response).encode('UTF-8'))
@@ -59,6 +63,23 @@ class Server(BaseHTTPRequestHandler):
       body = json.load(response)
 
     return body
+
+  def refreshToken(self, refreshToken):
+      url = "https://www.strava.com/oauth/token"
+      params = {
+        "client_id": CLIENT_ID,
+        "client_secret": CLIENT_SECRET,
+        "grant_type": "refresh_token",
+        "refresh_token": refreshToken,
+      }
+      url += "?" + urlencode(params, doseq=True, safe="/")
+
+      request = Request(url, method="POST")
+
+      with urlopen(request) as response:
+        body = json.load(response)
+
+      return body
 
 if __name__ == "__main__":
   server = HTTPServer(("", PORT), Server)
